@@ -1,0 +1,14 @@
+{
+  "name": "pres-bash",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "quilicicf <quilicicf@gmail.com> (https://github.com/quilicicf)",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "reveal.js": "3.9.2"
+  }
+}

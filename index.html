@@ -1,0 +1,815 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Bash > /dev/null</title>
+
+  <!--  <link rel="stylesheet" href="../css/reset.css">-->
+  <link rel="stylesheet" href="./node_modules/reveal.js/css/reveal.css">
+  <link rel="stylesheet" href="./node_modules/reveal.js/css/theme/black.css">
+  <!-- PrismJS conf: https://prismjs.com/download.html#themes=prism-okaidia&languages=bash&plugins=keep-markup+normalize-whitespace+match-braces -->
+  <link rel="stylesheet" href="assets/prism.css">
+  <link rel="icon" href="assets/bash-logo-simple.png">
+  <style>
+    .reveal pre>code {
+      font-family: monospace;
+      max-height: unset;
+    }
+
+    pre>code div {
+      display: inline-block;
+    }
+
+    pre[class*="language-"] {
+      font-size: .6em;
+      width: auto;
+      display: inline-block;
+    }
+
+    .green {
+      color: #56BB8A;
+    }
+
+    .orange {
+      color: #FFD666;
+    }
+
+    .red {
+      color: #E67C73;
+    }
+
+    .gray {
+      color: #666666;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+      <section>
+        <h1>
+          <img src="assets/bash-logo.png" alt="Bash logo" style="margin: 0; border: none">
+          <span> > /dev/null</span>
+        </h1>
+        <p class="gray">2020/03/04</p>
+      </section>
+      <section>
+        <h2>Disclaimer</h2>
+        <ul>
+          <li class="fragment">This presentation is not intended to be a complete guide</li>
+          <li class="fragment">I am self-taught in bash, I may show fiddle-with-it approach on some parts</li>
+        </ul>
+      </section>
+      <section>
+        <h2>Plan</h2>
+        <ol>
+          <li>What is bash?</li>
+          <li>How is it used at Talend?</li>
+          <li>How should I write it?</li>
+          <li>Cheatsheet</li>
+          <li>Scripting advice</li>
+          <li>Pitfalls</li>
+          <li>Bash swiss knife</li>
+          <li>Portability</li>
+        </ol>
+      </section>
+      <section>
+        <h2>What is bash?</h2>
+        <ul>
+          <li class="fragment fade-in">Free, open source Unix Shell</li>
+          <li class="fragment fade-in">Initially written by Brian Fox for GNU Project in 1989</li>
+          <li class="fragment fade-in">Replacement for <a href="https://en.wikipedia.org/wiki/Bourne_shell">Bourne Shell</a></li>
+          <li class="fragment fade-in"><a href="https://en.wikipedia.org/wiki/POSIX">POSIX</a> compliant</li>
+          <li class="fragment fade-in">Bash actually means Bourne-Again Shell</li>
+          <li class="fragment fade-in">Version installed by default on Mac is 3.2 (2006) for licensing issues</li>
+          <li class="fragment fade-in">Version installed by default on most linux distribs is 4.4 (2016)</li>
+          <li class="fragment fade-in">Last available version is 5.5 (2019)</li>
+        </ul>
+        <aside class="notes">
+          <p>Bourne Shell = sh. Bash copies most features from sh and adds a few of its own like history.</p>
+          <p>POSIX is a set of standards aimed at making OSes compatible. It defines an API for software compatibility.</p>
+          <p>Mac users CAN and SHOULD install Bash 4.4. Apple just isn't allowed to do so on the computers they sell.</p>
+        </aside>
+      </section>
+      <section>
+        <h2>How is it used at Talend?</h2>
+        <ul>
+          <li class="fragment fade-in">On our AWS machines</li>
+          <li class="fragment fade-in">On CI for builds</li>
+          <li class="fragment fade-in">On developer computers for basic tooling</li>
+          <li class="fragment fade-in">On the demo stack via SSH</li>
+        </ul>
+      </section>
+      <section>
+        <section>
+          <h2>How should I write it?</h2>
+          <a href="https://www.youtube.com/watch?v=ALZZx1xmAzg" style="display: block; height: 50vh">
+            <img src="assets/you-wouldnt.png" alt="Meme on the excellent piracy ad parody from the IT crowd. Labeled you wouldn't write JS without static analysis!">
+          </a>
+        </section>
+        <section>
+          <h3>Lint away!</h3>
+          <p><a href="https://github.com/koalaman/shellcheck">Shellcheck to the rescue!</a></p>
+          <img src="assets/shellcheck-example.png" alt="Shellcheck in action">
+          <br>
+          <img src="assets/shellcheck-example-atom.png" alt="Shellcheck in action (in Atom)">
+        </section>
+        <section>
+          <h3>Shellcheck in editors</h3>
+          <p>Shellcheck is available on:</p>
+          <ul>
+            <li><a href="https://github.com/w0rp/ale">Vim</a></li>
+            <li><a href="https://github.com/flycheck/flycheck">Emacs</a></li>
+            <li><a href="https://github.com/SublimeLinter/SublimeLinter-shellcheck">Sublime</a></li>
+            <li><a href="https://github.com/AtomLinter/linter-shellcheck">Atom</a></li>
+            <li><a href="https://github.com/timonwong/vscode-shellcheck">VSCode</a></li>
+            <li>Most editors via <a href="https://github.com/koalaman/shellcheck/blob/master/shellcheck.1.md#user-content-formats">GCC error compatibility</a></li>
+          </ul>
+          <p class="orange">No excuses!</p>
+        </section>
+      </section>
+      <section>
+        <section>
+          <h2>Cheatsheet</h2>
+          <p>
+            <span>A cheatsheet you can come back to at any moment</span>
+            <br>
+            <span>A <a href="https://missing.csail.mit.edu/">longer course</a> can be found on MIT's website</span>
+          </p>
+        </section>
+        <section>
+          <h2>Processes inputs</h2>
+          <p>For programs that read standard input</p>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">sort <   hello.txt          # Sorts hello.txt</div>
+              <div class="fragment">sort <<< "$var"             # Sorts content of variable var</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h2>Processes outputs</h2>
+          <p>For all programs that write to standard output</p>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">printf 'hello' >  out.txt          # Writes standard output (hello) to out.txt</div>
+              <div class="fragment">printf 'hello' >> out.txt          # Appends standard output (hello) to out.txt</div>
+              <div class="fragment">command 2> err.txt                 # Writes standard error to err.txt</div>
+              <div class="fragment">command &> all.txt                 # Writes standard output & error to all.txt</div>
+              <div class="fragment">printf 'hello' > /dev/null         # Discards standard output</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Mixing input/output</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">printf 'hello' | grep 'toto'      # Pipes standard output (hello) to grep</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Variables</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">name='Toto'                  # /!\ No spaces around = in bash assignations /!\</div>
+              <div class="fragment">printf "Hello $name\n"       # Variable is substituted in double quotes, prints 'Hello Toto'</div>
+              <div class="fragment">printf 'Hello $name\n'       # Variable is not substituted in simple quotes, prints 'Hello $name'</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Functions</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment" data-fragment-index="0">functionName() {    # Classic syntax for declaration</div>
+                <div class="fragment" data-fragment-index="1">scriptName=$0     # $0 is the script name</div>
+                <div class="fragment" data-fragment-index="2">firstArgument=$1  # $n is the script's nth argument</div>
+                <div class="fragment" data-fragment-index="3">allArgs=$@        # $@ is all the arguments</div>
+                <div class="fragment" data-fragment-index="4">argsNumber=$#     # $# is the number of arguments</div>
+              <div class="fragment" data-fragment-index="0">}</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Return codes</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">grep toto <<< 'toto'        # Return code is 0 === success</div>
+              <div class="fragment">grep toto <<< 'tata'        # Return code is 1. Any code !== 0 is an error</div>
+              <div class="fragment">lastReturnCode=$?           # $? contains the return code of the last command</div>
+              <div class="fragment">command && { printf 'OK'; } # The block after && executed if command succeeds</div>
+              <div class="fragment">command || { printf 'KO'; } # The block after || executed if command fails</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Share results</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment"># $() allows to retrieve the standard output of a method</div>
+              <div class="fragment">greeting="$(printf "Hello $name")"</div>
+              <div class="fragment"># Less known, <() puts the standard output of a method in a temp file</div>
+              <div class="fragment">greetingFile=<(printf "Hello $name")</div>
+              <div class="fragment"># greetingFile is the path to a temporary file where the greeting was written</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Conditionals</h3>
+          <p>
+            Conditionals in bash are expressions.
+            <br>
+            Return code 0 = true, any other is false
+          </p>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">
+              if grep --silent 'toto' <<< 'tata'; then
+                # Executed if the grep returned 0
+              else
+                # Executed if the grep returned anything but 0
+              fi
+              </div>
+              <div class="fragment">[[ "$var" = 'toto' ]]                    # Expressions inside double brackets return 0 if true, non-zero otherwise</div>
+              <div class="fragment">[[ "$var" = 'toto' || "$var" = 'tata' ]] # Composite conditionals</div>
+            </code>
+          </pre>
+          <aside class="notes">
+            <p>Everything available inside double brackets is from test command</p>
+          </aside>
+        </section>
+        <section>
+          <h3>Globbing</h3>
+          <p>In a folder containing</p>
+          <pre class="language-" style="margin:auto; display: inline-block; width: auto; font-size: .6em">
+            <code>
+              .
+              ├── bar
+              ├── img.png
+              ├── img.jpg
+              ├── img.svg
+              ├── foo1
+              ├── foo2
+              ├── foo3
+              └── foo99
+            </code>
+          </pre>
+          <br>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">rm foo?          # Removes foo1, foo2 & foo3</div>
+              <div class="fragment">rm foo??         # Removes foo99</div>
+              <div class="fragment">rm foo*          # Removes foo1, foo2, foo3 & foo99</div>
+              <div class="fragment">rm img.{svg,png} # Removes img.svg & img.png</div>
+              <div class="fragment">rm img.*         # Removes img.svg img.jpg & img.png</div>
+              <div class="fragment">rm foo{1..2}     # Removes foo1 & foo2</div>
+              <div class="fragment">rm foo{*,99}     # Removes ?</div>
+              <div class="fragment"># Only foo99!</div>
+            </code>
+          </pre>
+          <p class="fragment gray">Note: using globbing is often better than ls | grep</p>
+        </section>
+        <section>
+          <h3>Regex</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">[[ 'toto' =~ (to){3} ]]     # Returns 0, the string matches the regex</div>
+              <div class="fragment">regex='(to){3}'</div>
+              <div class="fragment">[[ 'toto' =~ $regex ]]      # Returns 1, the string does not match the regex</div>
+              <div class="fragment">[[ '(to){3}' =~ "$regex" ]] # Returns 0, the regex is matched as a string /!\</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Parameter substitution - Bourne</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">
+              # Before starting: $var = ${var}, $1 = ${1}
+              # Substitutions look like this: ${&lt;varName>&lt;subsitutionCharacter>&lt;fallbackIfVariableIsUnset>}
+              </div>
+              <div class="fragment">
+              # For substitutions below, adding : before the substitution character adds empty case to failure cases
+              # Otherwise, only unset values fall in failure cases
+              </div>
+              <div class="fragment">toto=${var1-Nope}                # fallback value (Nope) if var1 is unset</div>
+              <div class="fragment">toto=${1?Missing parameter toto} # error with message if $1 is unset</div>
+
+              <div class="fragment">length=${#var}                   # returns the length of $var</div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Parameter substitution - Bash</h3>
+          <pre class="language-bash">
+            <code>
+            <div class="fragment">offset=${var:2}                  # returns the value of var, starting with an offset of 2</div>
+            <div class="fragment">offset=${var:2:5}                # same but only returns 5 characters from the offset start</div>
+
+            <div class="fragment">replaced=${var/[0-9]/?}          # replaces the first number in $var with ?</div>
+            <div class="fragment">replaced=${var//[0-9]/?}         # replaces all numbers in $var with ?</div>
+
+            <div class="fragment"># /!\ The commands below only work with Bash 4+</div>
+            <div class="fragment">upperCaseVar=${var^^}</div>
+            <div class="fragment">lowerCaseVar=${var,,}</div>
+            </code>
+          </pre>
+          <p>
+            <a href="https://www.tldp.org/LDP/abs/html/parameter-substitution.html">
+              More on parameter substitution
+            </a>
+            <br>
+            <span class="gray">You probably know enough though</span>
+          </p>
+        </section>
+        <section>
+          <h3>Arrays</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">declare -a array         # Create indexed array: keys are integers</div>
+              <div class="fragment">declare -A array         # Create declarative array: keys are whatever the hell ya want</div>
+              <div class="fragment">array=()                 # Create an indexed array without values</div>
+              <div class="fragment">array=('titi tata' toto) # Create an indexed array with values</div>
+
+              <div class="fragment">arraySize=${#array[@]}      # Gives the size: 2</div>
+              <div class="fragment">array3rdElement=${array[1]} # Gives the second element, toto</div>
+
+              <div class="fragment">array+=(tutu tete)                     # Appends to an array</div>
+              <div class="fragment">array[2]=(tyty)                        # Updates array item</div>
+              <div class="fragment">for item in "${array[@]}"; do ... done # Loops on an array</div>
+              <div class="fragment">sliced=("${array[@]:1:2}")             # Slices array, offset 1, 2 elements</div>
+
+              <div class="fragment">declare -p array     # Log the array in the form: declare -a array=([0]="titi tata" [1]="toto")</div>
+              <div class="fragment">printf "${array[@]}" # A simpler version but less clear: titi tata toto</div>
+            </code>
+          </pre>
+        </section>
+      </section>
+      <section>
+        <section>
+          <h2>Scripting advice</h2>
+        </section>
+        <section>
+          <h3>Script shape</h3>
+          <img src="assets/real-scripts-have-curves.jpg" alt="Real scripts have curves">
+        </section>
+        <section>
+          <h3>Script shape</h3>
+          <p>Goals</p>
+          <ul>
+            <li class="fragment fade-in">Readable</li>
+            <li class="fragment fade-in">Usable</li>
+            <li class="fragment fade-in">Debuggable</li>
+          </ul>
+        </section>
+        <section>
+          <h3>Script shape</h3>
+          <pre class="language-bash match-braces">
+            <code>
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="1">#!/usr/bin/env bash</div>
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="1"># To execute the file directly: ./file.sh</div>
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="1"># Requires chmod +x first</div>
+
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="2">set -xe</div>
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="3">test -f '/path/to/file' && { source "$_"; }</div>
+
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="4">main() {</div>
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="5">if isHelp; then displayHelpAndReturn; fi</div>
+
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="6">local arg1="${1?Missing path to lib}"</div>
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="6">local arg2="${2?Missing bla bla}"</div>
+
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="7">_importedCommand "$arg1"</div>
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="7">command1 "$arg1"</div>
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="7">command2 "$arg2"</div>
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="4">}</div>
+
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="8">command1() {</div>
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="8">local arg1="$1"</div>
+                <div class="fragment fade-in-then-semi-out" data-fragment-index="8">...</div>
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="8">}</div>
+
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="8">command2() { ... }</div>
+
+              <div class="fragment fade-in-then-semi-out" data-fragment-index="9">main "$@"</div>
+            </code>
+          </pre>
+          <aside class="notes">
+            <ul>
+              <li>
+                <strong style="color: #FFD666">Shebang</strong>
+                <span>So the system knows how to execute it. Bash for bash, sh for Bourne!</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">set -xe</strong>
+                <span>Eq: <code>set -x; set -e</code> Only when necessary (ex: CI)</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">Import files</strong>
+                <span>For re-usability. Test the existence before</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">main part</strong>
+                <span>Should be almost literal, this is were you understand what it does at a glance</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">help</strong>
+                <span>For interactive scripts. For CI, comments are enough.</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">args</strong>
+                <span>Get and check your args before doing anything</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">body</strong>
+                <span>Literal, as said earlier</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">Script utilities</strong>
+                <span>To hide unimportant implementation details and EXPLAIN</span>
+              </li>
+              <li>
+                <strong style="color: #FFD666">main call</strong>
+                <span>Call the main method, passing all arguments passed to the script</span>
+              </li>
+            </ul>
+          </aside>
+        </section>
+        <section>
+          <h3>Conventions</h3>
+          <p class="gray">Disclaimer: these are my own, they've helped me a lot tho</p>
+          <table>
+            <thead>
+              <th>Rule</th>
+              <th>Reason</th>
+            </thead>
+            <tbody>
+              <tr class="fragment">
+                <td>Use double quotes only when there is a substitution</td>
+                <td>Makes it easier to spot constants from templated strings</td>
+              </tr>
+              <tr class="fragment">
+                <td>Quote everything unless you have a good reason not to</td>
+                <td>Minimizes errors due to word splitting</td>
+              </tr>
+              <tr class="fragment">
+                <td>Prefix external methods/constants with _</td>
+                <td>Makes it easier to spot them and find where they are implemented</td>
+              </tr>
+              <tr class="fragment">
+                <td>Casing: upper-snake-case for constants and global variables. Lower-camel-case otherwise.</td>
+                <td>Makes them easier to differentiate</td>
+              </tr>
+              <tr class="fragment">
+                <td>Use full flags in CLI tools</td>
+                <td>
+                  <p>
+                    <span>More explicit, ex:</span>
+                    <pre class="language-bash"><code>jq -r</code></pre>
+                    <br>
+                    <span>vs.</span>
+                    <br>
+                    <pre class="language-bash"><code>jq --raw-output</code></pre>
+                  </p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+      <section>
+        <section>
+          <h2>Pitfalls</h2>
+        </section>
+        <section>
+          <h3>Deprecated syntaxes</h3>
+          <div class="fragment">
+            <pre class="language-bash">
+              <code>
+                files=`ls`    # Back-tick syntax is deprecated in bash
+                <div class="fragment">files="$(ls)" # The syntax to use</div>
+              </code>
+            </pre>
+            <p>
+              <a href="https://github.com/koalaman/shellcheck/wiki/SC2006">
+                Explanation of the back-tick deprecation
+              </a>
+            </p>
+          </div>
+          <div class="fragment">
+            <pre class="language-bash">
+              <code>
+                [ -n "$fileName" ]   # Uses /usr/bin/[
+                <div class="fragment">[[ -n "$fileName" ]] # Prefer built-in syntax, can't be messed with</div>
+                <div class="fragment">test -n "$fileName"  # This works too</div>
+              </code>
+            </pre>
+            <p>
+              <a href="https://unix.stackexchange.com/questions/32210/why-does-parameter-expansion-with-spaces-without-quotes-work-inside-double-brack/32227#32227">
+                Explanation of why you should use double brackets for conditionals
+              </a>
+            </p>
+          </div>
+        </section>
+        <section>
+          <h3>Variable names and side-effects</h3>
+          <p>
+            <span>Some variable names are <a href="https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap08.html#tag_08">reserved</a></span>
+            <span>Some are used by other tools</span>
+            <span>In doubt, always use super-precise names for upper-case variables.</span>
+            <span>Also, initialize them or anyone can change the behavior of your script unintentionally.</span>
+          </p>
+        </section>
+        <section>
+          <h3>Imports</h3>
+          <p>Imports are realized from cwd (current work directory) in bash!</p>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">
+              # Bad way
+              source ./utils.sh # <== Resolves to ~/utils.sh if executed from ~ and /tmp/utils.sh if executed from /tmp!
+              </div>
+
+              <div class="fragment">
+              # Better way
+              dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )" # Gets script's directory, see one-liners section
+              source "$dir/utils.sh"
+              </div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Subshells - what is it?</h3>
+          <p>A subshell is a separate instance of the command processor (here, bash)</p>
+        </section>
+        <section>
+          <h3>Subshells - how do I create one?</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">( cd /tmp; ls ) # Anything inside parenthesis happens in a subshell, goes for $() too</div>
+              <div class="fragment">
+              # Piping creates a subshell
+              cat file.txt | while read -r line; do
+                # In a subshell here
+              done
+              </div>
+              <div class="fragment">
+              # This does not create a subshell
+              while read -r line; do
+                # Not in a subshell here
+              done < file.txt
+              </div>
+            </code>
+          </pre>
+          <aside class="notes">
+            <p>For the attentive reader, the flag -r in read disables escaping of line breaks with \</p>
+            <p>This prevents read from reading the following code as a single line</p>
+            <code>cat toto.txt \</code>
+            <br>
+            <code>&nbsp;&nbsp;| sort</code>
+          </aside>
+        </section>
+        <section>
+          <h3>Subshells - what are the impacts?</h3>
+          <p>When in a subshell, you can't modify the state from outside, meaning</p>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">( cd /tmp; ls ) # I won't be in /tmp after this line, only the subshell got cded</div>
+              <div class="fragment">
+              var=toto
+              cat file.txt | while read -r line; do
+                var=tata # NAY! The value is still toto, can't touch dat!
+              done
+              </div>
+              <div class="fragment">
+              while read -r line; do
+                var=tutu # That's OK!
+              done < file.txt
+              </div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Set -e</h3>
+          <p>This one's a tricky one, you need to protect against it.</p>
+          <pre class="language-bash">
+            <code>
+              set -e # The script fails on any uncaught errors from now on
+
+              # What do you think this'll do?
+              grep --silent toto <<< 'tata' && { printf 'OK!\n'; }
+              <div class="fragment"># It FAILS HAHAHA! Error case is not caught</div>
+
+              <div class="fragment">grep --silent 'a' <<< 'b' || { printf 'OK!\n'; } # The error is caught here</div>
+              <div class="fragment"># If in doubt, always use if, it catches all errors</div>
+            </code>
+          </pre>
+        </section>
+      </section>
+      <section>
+        <section>
+          <h2>Bash swiss knife</h2>
+          <p class="gray">A nice collections of things to know/install</p>
+        </section>
+        <section>
+          <h3>Commands and one-liners</h3>
+          <p class="gray">Save them somewhere!</p>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">
+              # Create a temporary file and writes its path on stdout
+              mktemp -f toto-XXX.txt # The XXX are replaced by random characters
+              </div>
+              <div class="fragment">
+              # Retrieve the path to the file being executed
+              dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+              # What it does:
+              # * ${BASH_SOURCE[@]} contains the path to the current script
+              # * dirname           extracts the containing folder path
+              # * cd                cds to it
+              # * pwd               prints the absolute path to the current directory
+              </div>
+            </code>
+          </pre>
+        </section>
+        <section>
+          <h3>Tips & tricks</h3>
+          <pre class="language-bash">
+            <code>
+              <div class="fragment">
+              # Escape any character with \
+              command | uniq \      # Can improve readibility
+                      | sort \
+                      > output.txt
+              cat ~/File\ from\ a\ windaube\ user\ troll.txt # Or use file names with spaces
+              </div>
+              <div class="fragment">
+              # Group outputs with blocks
+              command1 >  output.txt # Big chance of using a > by mistake later
+              command2 >> output.txt
+              command2 >  output.txt # And ruining the begining of the file, oops!
+
+              {
+                command1; command2; command3
+              } > output.txt # No risk of error!
+              </div>
+              <div class="fragment">
+              # Pushd with auto-popd!
+              set -e
+              (
+                cd "$folder"
+                commandThatMayFailAndWouldNotResetCwdIfInMainShell
+              )
+              </div>
+            </code>
+          </pre>
+          <p class="gray">I'll enrich this section as I go along</p>
+        </section>
+        <section>
+          <h3>Useful packages</h3>
+          <ul>
+            <li class="fragment"><a href="https://curl.haxx.se">curl</a> THE most used CLI HTTP client</li>
+            <li class="fragment"><a href="https://hisham.hm/htop/">htop</a> process inspector</li>
+            <li class="fragment"><a href="https://github.com/sharkdp/fd">fd</a> to replace find</li>
+            <li class="fragment"><a href="https://github.com/BurntSushi/ripgrep">rg (ripgrep)</a> to replace grep</li>
+            <li class="fragment"><a href="https://linux.die.net/man/1/tree">tree</a> replaces ls for nested folders</li>
+            <li class="fragment"><a href="https://stedolan.github.io/jq/manual">jq</a> JSON parser (use 1.5+ to keep property order)</li>
+            <li class="fragment"><a href="https://github.com/mikefarah/yq">yq</a> YAML equivalent of jq</li>
+            <li class="fragment"><a href="http://xmlstar.sourceforge.net">xmlstarlet</a> XML parser</li>
+          </ul>
+        </section>
+      </section>
+      <section>
+        <h2>Portability</h2>
+        <p class="gray">Making sure it executes properly on all systems by avoiding non-portable commands</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Reason</th>
+              <th>Recommandation</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="fragment">
+              <th><a href="https://en.wikipedia.org/wiki/Sed">sed</a></th>
+              <td>GNU version (Linux) and FreeBSD (Mac) differ on some flags. Syntax hard to read.</td>
+              <td>For structured formats (JSON etc) use a real parser. Otherwise, use awk</td>
+            </tr>
+            <tr class="fragment">
+              <th><a href="https://en.wikipedia.org/wiki/Echo_(command)">echo</a></th>
+              <td>Some flags (-e) don't behave the same on linux and mac</td>
+              <td>Use <a href="https://en.wikipedia.org/wiki/Printf_format_string">printf</a></td>
+            </tr>
+            <tr class="fragment">
+              <th><a href="http://linux.die.net/man/1/readlink">readlink</a></th>
+              <td>Mac does not have the GNU version of readlink</td>
+              <td>
+                <pre><code>resolvedLink="$(cd "$path" && pwd -P)"</code></pre>
+              </td>
+            </tr>
+            <tr class="fragment">
+              <th>Direct shebangs</th>
+              <td>Programs are not always installed at the same place</td>
+              <td>
+                <pre class="language-bash">
+                  <code>
+                    #!/usr/bin/env python
+                    # Instead of /usr/bin/python for example
+                  </code>
+                </pre>
+              </td>
+            </tr>
+            <tr class="fragment">
+              <th>Shell flags not in shebangs</th>
+              <td>Some systems will ignore them or crash</td>
+              <td>
+                <pre class="language-bash">
+                  <code>
+                    #!/usr/bin/env bash
+                    set -e
+                    # Instead of #!/usr/bin/env bash -e
+                  </code>
+                </pre>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <aside class="notes">
+          <p>The developer computer thing implies we must make it portable!</p>
+        </aside>
+      </section>
+      <section>
+        <h2>Nice sources</h2>
+        <ul>
+          <li><a href="https://missing.csail.mit.edu/">The missing semester of your CS education</a> </li>
+          <li><a href="https://wiki.bash-hackers.org/">The bash hacker wiki</a></li>
+        </ul>
+        <aside class="notes">
+          <p>Note: the first one is digestible easily, the second one less so.</p>
+        </aside>
+      </section>
+      <section>
+        <h2>Thanks for your attention!</h2>
+        <p>Please don't hesitate to slack me any cool/tricky thing you know about bash that's not here!</p>
+        <p>Slack handle: @cyp</p>
+      </section>
+    </div>
+  </div>
+
+  <script src="./assets/prism.js"></script>
+  <script src="./node_modules/reveal.js/js/reveal.js"></script>
+  <script>
+    // Printing and PDF exports
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match(/print-pdf/gi) ?
+      './node_modules/reveal.js/css/print/pdf.css' :
+      './node_modules/reveal.js/css/print/paper.css';
+    document.getElementsByTagName('head')[0].appendChild(link);
+
+    // Whitespaces configuration in pre>code
+    window.Prism.plugins.NormalizeWhitespace.setDefaults({
+      'remove-trailing': true,
+      'remove-indent': true,
+      'left-trim': true,
+      'right-trim': true,
+    });
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const getFromUrlOrDefault = (optionName, caster, defaultValue) => {
+      const rawValue = urlParams.get(optionName);
+      if (rawValue == null) {
+        return defaultValue;
+      }
+      return caster(rawValue);
+    };
+    const castToBoolean = (raw) => raw === 'true';
+
+    // Reveal options
+    window.Reveal.initialize({
+      controlsTutorial: false,
+      slideNumber: 'c/t',
+      hash: true,
+      defaultTiming: 120,
+      width: 1920,
+      height: 1080,
+      fragments: getFromUrlOrDefault('fragments', castToBoolean, true),
+      transition: 'none',
+      pdfSeparateFragments: false,
+      showNotes: getFromUrlOrDefault('show-notes', castToBoolean, false),
+      dependencies: [{
+        src: './node_modules/reveal.js/plugin/notes/notes.js',
+        async: true
+      }, ]
+    });
+  </script>
+</body>
+
+</html>
