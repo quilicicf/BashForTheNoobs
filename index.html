@@ -372,8 +372,6 @@
           <pre class="language-bash match-braces">
             <code>
               <div class="fragment fade-in-then-semi-out" data-fragment-index="1">#!/usr/bin/env bash</div>
-              <div class="fragment fade-in-then-semi-out" data-fragment-index="1"># To execute the file directly: ./file.sh</div>
-              <div class="fragment fade-in-then-semi-out" data-fragment-index="1"># Requires chmod +x first</div>
 
               <div class="fragment fade-in-then-semi-out" data-fragment-index="2">set -xe</div>
               <div class="fragment fade-in-then-semi-out" data-fragment-index="3">test -f '/path/to/file' && { source "$_"; }</div>
@@ -402,8 +400,11 @@
           <aside class="notes">
             <ul>
               <li>
-                <strong style="color: #FFD666">Shebang</strong>
-                <span>So the system knows how to execute it. Bash for bash, sh for Bourne!</span>
+                <p>
+                  <strong style="color: #FFD666">Shebang</strong>
+                  <span>So the system knows how to execute it. Bash for bash, sh for Bourne!</span>
+                </p>
+                <p>You can execute it with <code>./script.sh</code> but it requires a <code>chmod +x ./script.sh</code> first</p>
               </li>
               <li>
                 <strong style="color: #FFD666">set -xe</strong>
@@ -803,7 +804,7 @@
       fragments: getFromUrlOrDefault('fragments', castToBoolean, true),
       transition: 'none',
       pdfSeparateFragments: false,
-      showNotes: getFromUrlOrDefault('show-notes', castToBoolean, false),
+      showNotes: getFromUrlOrDefault('show-notes', string => string, false),
       dependencies: [{
         src: './node_modules/reveal.js/plugin/notes/notes.js',
         async: true
