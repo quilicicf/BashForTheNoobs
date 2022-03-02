@@ -11,6 +11,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "live-server": "1.2.1",
-    "reveal.js": "3.9.2"
+    "reveal.js": "4.3.0"
   }
 }
