@@ -1,5 +1,8 @@
 # Bash > /dev/null
 
+> [!CAUTION]
+> Presentation moved to [quilicicf/presentations](https://github.com/quilicicf/presentations).
+
 This presentation is a [Reveal.js](https://revealjs.com/#/) presentation to give the minimal inputs for a developer to start scripting in Bash.
 
 It shows the basic language features and tips&tricks for portability and maintainability.
